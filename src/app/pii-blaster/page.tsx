@@ -148,11 +148,31 @@ Shooting <b>PII</b> or <b>confidential</b> data costs you points.
 {screen === "play" && (
   <section className="flex flex-col gap-3">
     <PiiBlasterCanvas
-      onFinish={(r) => {
-        alert(`Round over! Score: ${r.score}\nSafe: ${r.safeHits}, PII: ${r.piiHits}, Conf: ${r.confHits}`);
-        setScreen("intro");
-      }}
-    />
+  onFinish={async (r) => {
+    try {
+      const res = await fetch("/api/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          game: "pii_blaster",
+          score: r.score,
+        }),
+      });
+
+      if (!res.ok) {
+        const msg = await res.text();
+        alert(`Score NOT saved: ${msg}`);
+      } else {
+        alert(`Score saved ✅  (${r.score} points)`);
+      }
+    } catch {
+      alert("Score NOT saved: network error");
+    } finally {
+      setScreen("intro");
+    }
+  }}
+/>
     <button className="rounded-lg border px-4 py-2 w-fit" onClick={() => setScreen("intro")}>
       Quit
     </button>
