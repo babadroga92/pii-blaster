@@ -263,10 +263,11 @@ export default function PiiBlasterPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left border-b">
-                    <th className="py-2">Rank</th>
-                    <th>Username</th>
-                    <th>Score</th>
-                    <th className="hidden sm:table-cell">When</th>
+                  <th className="py-2 font-black text-black">Rank</th>
+<th className="font-black text-black">Username</th>
+<th className="font-black text-black">Score</th>
+<th className="hidden sm:table-cell font-black text-black">When</th>
+
                   </tr>
                 </thead>
                 <tbody>
