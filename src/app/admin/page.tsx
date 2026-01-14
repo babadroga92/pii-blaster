@@ -98,9 +98,9 @@ export default function AdminPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left border-b">
-              <th className="py-2 font-black text-black">When</th>
-              <th className="font-black text-black">Username</th>
-              <th className="font-black text-black">Score</th>
+              <th className="py-2 font-black text-white">When</th>
+              <th className="font-black text-white">Username</th>
+              <th className="font-black text-white">Score</th>
             </tr>
           </thead>
           <tbody>
@@ -109,8 +109,8 @@ export default function AdminPage() {
                 <td className="py-2 whitespace-nowrap text-neutral-700">
                   {new Date(r.created_at).toLocaleString()}
                 </td>
-                <td className="whitespace-nowrap font-semibold text-black">{r.username}</td>
-                <td className="whitespace-nowrap font-black text-black">{r.score}</td>
+                <td className="whitespace-nowrap font-semibold text-white">{r.username}</td>
+                <td className="whitespace-nowrap font-black text-white">{r.score}</td>
               </tr>
             ))}
             {rows.length === 0 && (
