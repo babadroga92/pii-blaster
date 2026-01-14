@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PiiBlasterCanvas, { GameResult } from "./components/PiiBlasterCanvas";
 
 type Screen = "intro" | "username" | "play" | "results";
@@ -22,6 +22,9 @@ export default function PiiBlasterPage() {
   const [leaderboard, setLeaderboard] = useState<LbRow[]>([]);
   const [savingMsg, setSavingMsg] = useState<string>("");
 
+  // ✅ prevents duplicate submissions per round
+  const finishLockRef = useRef(false);
+
   useEffect(() => {
     const saved = localStorage.getItem(USERNAME_KEY);
     if (saved) setUsername(saved);
@@ -32,6 +35,8 @@ export default function PiiBlasterPage() {
   // Start 3-2-1 countdown whenever we enter the play screen
   useEffect(() => {
     if (screen !== "play") return;
+
+    finishLockRef.current = false; // ✅ reset each round
 
     setCountdown(3);
     setCountdownActive(true);
@@ -171,6 +176,10 @@ export default function PiiBlasterPage() {
               <div className={countdownActive ? "pointer-events-none opacity-0" : ""}>
                 <PiiBlasterCanvas
                   onFinish={async (r) => {
+                    // ✅ guard against double-finishes / double-submits
+                    if (finishLockRef.current) return;
+                    finishLockRef.current = true;
+
                     setLastResult(r);
                     setSavingMsg("Saving score…");
                     try {
@@ -191,9 +200,7 @@ export default function PiiBlasterPage() {
               {/* Countdown overlay covers the canvas, but canvas still reserves space */}
               {countdownActive && (
                 <div className="absolute inset-0 rounded-xl border bg-black/90 flex flex-col items-center justify-center gap-3">
-                  <div className="text-white text-7xl font-black">
-                    {countdown === 0 ? "GO!" : countdown}
-                  </div>
+                  <div className="text-white text-7xl font-black">{countdown === 0 ? "GO!" : countdown}</div>
                   <div className="text-white/80 text-sm">Get ready…</div>
                 </div>
               )}
@@ -221,10 +228,7 @@ export default function PiiBlasterPage() {
             </div>
 
             <div className="border-t pt-3 flex gap-2">
-              <button
-                className="rounded-lg border px-3 py-2 text-sm w-full"
-                onClick={() => setScreen("intro")}
-              >
+              <button className="rounded-lg border px-3 py-2 text-sm w-full" onClick={() => setScreen("intro")}>
                 Exit
               </button>
             </div>
@@ -266,8 +270,8 @@ export default function PiiBlasterPage() {
           <div className="rounded-xl border p-4 bg-neutral-50">
             <p className="font-semibold text-black">Privacy takeaway</p>
             <p className="text-sm text-neutral-700 mt-1">
-              If it identifies a person (PII) or exposes internal business details (confidential), treat
-              it as sensitive and handle it carefully.
+              If it identifies a person (PII) or exposes internal business details (confidential), treat it as
+              sensitive and handle it carefully.
             </p>
           </div>
 
