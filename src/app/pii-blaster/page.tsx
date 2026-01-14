@@ -292,16 +292,27 @@ export default function PiiBlasterPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderboard.map((r, i) => (
-                    <tr key={`${r.username}-${r.created_at}-${i}`} className="border-b">
-                      <td className="py-2 font-semibold">{i + 1}</td>
-                      <td>{r.username}</td>
-                      <td className="font-semibold">{r.score}</td>
-                      <td className="hidden sm:table-cell text-neutral-600">
-                        {new Date(r.created_at).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
+  {leaderboard.map((r, i) => (
+    <tr
+      key={`${r.username}-${r.created_at}-${i}`}
+      className="border-b hover:bg-neutral-50"
+    >
+      <td className="py-2 font-semibold text-black">{i + 1}</td>
+
+      <td className="font-semibold text-black">
+        {r.username}
+      </td>
+
+      <td className="font-black text-black">
+        {r.score}
+      </td>
+
+      <td className="hidden sm:table-cell text-sm text-neutral-500">
+        {new Date(r.created_at).toLocaleString()}
+      </td>
+    </tr>
+  ))}
+
                   {leaderboard.length === 0 && (
                     <tr>
                       <td className="py-4 text-neutral-600" colSpan={4}>
