@@ -49,7 +49,7 @@ const SAFE = [
   "Company blog",
 ];
 const PII = ["Email address", "Phone number", "Home address", "Date of birth", "Passport #"];
-const CONF = ["Customer contract", "Payroll sheet", "Incident report", "Source code", "M&A notes"];
+const CONF = ["Contracts", "Payroll sheet", "Incident report", "Source code"];
 
 // Colors are intentionally NOT correlated with SAFE/PII/CONF
 const ITEM_COLORS = ["#1f2937", "#334155", "#4b5563", "#3f3f46", "#0f766e", "#1d4ed8", "#7c3aed", "#9a3412"];
