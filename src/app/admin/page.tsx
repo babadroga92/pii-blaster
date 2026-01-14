@@ -89,7 +89,7 @@ export default function AdminPage() {
         {status && <p className="text-sm text-neutral-700">{status}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <p className="text-xs text-neutral-600">
+        <p className="text-xs text-white">
           Tip: don’t share this token. Anyone with it can view or reset the leaderboard.
         </p>
       </div>
@@ -106,7 +106,7 @@ export default function AdminPage() {
           <tbody>
             {rows.map((r, i) => (
               <tr key={i} className="border-b">
-                <td className="py-2 whitespace-nowrap text-neutral-700">
+                <td className="py-2 whitespace-nowrap text-white">
                   {new Date(r.created_at).toLocaleString()}
                 </td>
                 <td className="whitespace-nowrap font-semibold text-white">{r.username}</td>
