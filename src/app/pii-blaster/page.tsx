@@ -254,15 +254,10 @@ export default function PiiBlasterPage() {
           </div>
 
           <div className="rounded-xl border p-4">
-            <div className="flex items-center justify-between">
-              <p className="font-black text-black">Top 5 leaderboard</p>
-              <button
-                className="rounded-lg border px-3 py-2 text-sm"
-                onClick={async () => setLeaderboard(await fetchLeaderboardTop5())}
-              >
-                Refresh
-              </button>
-            </div>
+          <div className="flex items-center justify-between">
+  <p className="font-black text-black">Top 5 leaderboard</p>
+</div>
+
 
             <div className="mt-3 overflow-auto">
               <table className="w-full text-sm">
