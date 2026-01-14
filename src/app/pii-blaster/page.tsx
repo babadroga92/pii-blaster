@@ -134,11 +134,12 @@ export default function PiiBlasterPage() {
         <section className="rounded-2xl border p-6 bg-white flex flex-col gap-3">
           <label className="font-semibold text-black">Choose a username (3–20 chars)</label>
           <input
-            className="border rounded-lg px-3 py-2"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.trim())}
-            placeholder="e.g. nemus_01"
-          />
+  className="border rounded-lg px-3 py-2 text-black font-semibold text-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
+  value={username}
+  onChange={(e) => setUsername(e.target.value.trim())}
+  placeholder="e.g. code_ninja"
+/>
+
 
           {!usernameValid && (
             <p className="text-sm text-red-600">
@@ -166,7 +167,7 @@ export default function PiiBlasterPage() {
       )}
 
 {screen === "play" && (
-  <section className="grid lg:grid-cols-[1fr_280px] gap-4 items-start">
+  <section className="grid lg:grid-cols-[1fr_180px] gap-4 items-start">
     <div className="flex flex-col gap-3">
       <div className="relative">
         {!countdownActive && (
