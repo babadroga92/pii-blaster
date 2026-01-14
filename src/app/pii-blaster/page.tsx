@@ -114,7 +114,7 @@ Shooting <b>PII</b> or <b>confidential</b> data costs you points.
             className="border rounded-lg px-3 py-2"
             value={username}
             onChange={(e) => setUsername(e.target.value.trim())}
-            placeholder="e.g. nemus_01"
+            placeholder="e.g. code_ninja"
           />
 
           {!usernameValid && (
