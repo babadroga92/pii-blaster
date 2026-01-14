@@ -168,75 +168,53 @@ export default function PiiBlasterPage() {
         </section>
       )}
 
-      {screen === "play" && (
-        <section className="grid lg:grid-cols-[1fr_180px] gap-4 items-start">
-          <div className="flex flex-col gap-3">
-            <div className="relative min-h-[560px]">
-              {/* Always mounted to avoid layout shift */}
-              <div className={countdownActive ? "pointer-events-none opacity-0" : ""}>
-                <PiiBlasterCanvas
-                  onFinish={async (r) => {
-                    // ✅ guard against double-finishes / double-submits
-                    if (finishLockRef.current) return;
-                    finishLockRef.current = true;
+{screen === "play" && (
+  <section className="flex flex-col gap-3">
+    <div className="flex items-center justify-between rounded-2xl border bg-white p-4">
+      <p className="text-sm text-black">
+        <span className="font-black">SHOOT</span> safe ·{" "}
+        <span className="font-black">AVOID</span> PII & confidential
+      </p>
+      <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => setScreen("intro")}>
+        Exit
+      </button>
+    </div>
 
-                    setLastResult(r);
-                    setSavingMsg("Saving score…");
-                    try {
-                      await submitScore(r.score);
-                      setSavingMsg("Score saved ✅");
-                    } catch (e: any) {
-                      setSavingMsg(`Score NOT saved: ${String(e?.message ?? e)}`);
-                    }
+    <div className="relative min-h-[560px]">
+      {/* Always mounted to avoid layout shift */}
+      <div className={countdownActive ? "pointer-events-none opacity-0" : ""}>
+        <PiiBlasterCanvas
+          onFinish={async (r) => {
+            if (finishLockRef.current) return;
+            finishLockRef.current = true;
 
-                    const top5 = await fetchLeaderboardTop5();
-                    setLeaderboard(top5);
+            setLastResult(r);
+            setSavingMsg("Saving score…");
+            try {
+              await submitScore(r.score);
+              setSavingMsg("Score saved ✅");
+            } catch (e: any) {
+              setSavingMsg(`Score NOT saved: ${String(e?.message ?? e)}`);
+            }
 
-                    setScreen("results");
-                  }}
-                />
-              </div>
+            const top5 = await fetchLeaderboardTop5();
+            setLeaderboard(top5);
 
-              {/* Countdown overlay covers the canvas, but canvas still reserves space */}
-              {countdownActive && (
-                <div className="absolute inset-0 rounded-xl border bg-black/90 flex flex-col items-center justify-center gap-3">
-                  <div className="text-white text-7xl font-black">{countdown === 0 ? "GO!" : countdown}</div>
-                  <div className="text-white/80 text-sm">Get ready…</div>
-                </div>
-              )}
-            </div>
-          </div>
+            setScreen("results");
+          }}
+        />
+      </div>
 
-          {/* Side panel */}
-          <aside className="rounded-2xl border bg-white p-4 flex flex-col gap-3 sticky top-6">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-neutral-500">Controls</p>
-              <p className="text-sm text-black mt-1">
-                <span className="font-bold">← →</span> or <span className="font-bold">A D</span> move
-                <br />
-                <span className="font-bold">Space</span> (or <span className="font-bold">Enter</span>) shoot
-              </p>
-            </div>
-
-            <div className="border-t pt-3">
-              <p className="text-xs uppercase tracking-wider text-neutral-500">Rules</p>
-              <p className="text-sm text-black mt-1">
-                <span className="font-black">SHOOT</span> safe items
-                <br />
-                <span className="font-black">AVOID</span> PII & confidential
-              </p>
-            </div>
-
-            <div className="border-t pt-3 flex gap-2">
-              <button className="rounded-lg border px-3 py-2 text-sm w-full" onClick={() => setScreen("intro")}>
-                Exit
-              </button>
-            </div>
-
-            <p className="text-xs text-neutral-500">(Timer + score are shown in the game HUD.)</p>
-          </aside>
-        </section>
+      {countdownActive && (
+        <div className="absolute inset-0 rounded-xl border bg-black/90 flex flex-col items-center justify-center gap-3">
+          <div className="text-white text-7xl font-black">{countdown === 0 ? "GO!" : countdown}</div>
+          <div className="text-white/80 text-sm">Get ready…</div>
+        </div>
       )}
+    </div>
+  </section>
+)}
+
 
       {screen === "results" && lastResult && (
         <section className="rounded-2xl border p-6 bg-white flex flex-col gap-4">
