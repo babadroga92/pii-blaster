@@ -94,35 +94,45 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <div className="rounded-xl border p-4 overflow-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="py-2 font-black text-white">When</th>
-              <th className="font-black text-white">Username</th>
-              <th className="font-black text-white">Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-b">
-                <td className="py-2 whitespace-nowrap text-white">
-                  {new Date(r.created_at).toLocaleString()}
-                </td>
-                <td className="whitespace-nowrap font-semibold text-white">{r.username}</td>
-                <td className="whitespace-nowrap font-black text-white">{r.score}</td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td className="py-6 text-neutral-600" colSpan={3}>
-                  No rows loaded yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <div className="rounded-xl border border-neutral-700 bg-neutral-900 p-4 overflow-auto">
+  <table className="w-full text-sm text-white">
+    <thead className="bg-neutral-950">
+      <tr className="text-left border-b border-neutral-700">
+        <th className="py-2 font-black">When</th>
+        <th className="font-black">Username</th>
+        <th className="font-black">Score</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {rows.map((r, i) => (
+        <tr
+          key={i}
+          className="border-b border-neutral-700 bg-neutral-900 hover:bg-neutral-800"
+        >
+          <td className="py-2 whitespace-nowrap text-neutral-300">
+            {new Date(r.created_at).toLocaleString()}
+          </td>
+          <td className="whitespace-nowrap font-semibold text-white">
+            {r.username}
+          </td>
+          <td className="whitespace-nowrap font-black text-white">
+            {r.score}
+          </td>
+        </tr>
+      ))}
+
+      {rows.length === 0 && (
+        <tr className="bg-neutral-900">
+          <td className="py-6 text-neutral-400" colSpan={3}>
+            No rows loaded yet.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
     </main>
   );
 }
