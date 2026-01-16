@@ -30,7 +30,7 @@ export type GameResult = {
   confHits: number;
 };
 
-const GAME_SECONDS = 25;
+const GAME_SECONDS = 60;
 
 const SAFE = [
   "Weather forecast",
@@ -45,11 +45,40 @@ const SAFE = [
   "Conference agenda",
   "Building hours",
   "Marketing slogan",
-  "Earnings announcement",
   "Company blog",
+  "Office location",
+  "Public roadmap",
+  "Event invitation",
+  "Training schedule",
+  "Webinar recording",
+  "User guide",
+  "FAQ page",
+  "Help article",
+  "Public pricing",
+  "Feature overview",
+  "Release notes",
+  "Community forum",
+  "Open source license",
+  "Support hours",
+  "Contact page",
+  "Public announcement",
+  "Brand guidelines",
 ];
-const PII = ["Email address", "Phone number", "Home address", "Date of birth", "Passport #"];
-const CONF = ["Contracts", "Payroll sheet", "Incident report", "Source code"];
+
+
+const PII = [
+  "Facial geometry",
+  "Voice signature",
+  "SSN",
+  "Date of birth",
+  "GPS location",
+  "Vehicle VIN",
+  "License plate",
+  "Email address",
+  "Login credentials",
+];
+
+const CONF = ["Customer contract", "Payroll sheet", "Incident report", "Source code", "Pricing strategy"];
 
 // Colors are intentionally NOT correlated with SAFE/PII/CONF
 const ITEM_COLORS = ["#1f2937", "#334155", "#4b5563", "#3f3f46", "#0f766e", "#1d4ed8", "#7c3aed", "#9a3412"];
@@ -58,10 +87,14 @@ function pick<T>(arr: T[]) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function circlesOverlap(ax: number, ay: number, ar: number, bx: number, by: number, br: number) {
-  const dx = ax - bx;
-  const dy = ay - by;
-  const rr = ar + br;
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function circleHitsBullet(item: FallingItem, bullet: Bullet) {
+  const dx = item.x - bullet.x;
+  const dy = item.y - bullet.y;
+  const rr = item.r + bullet.r;
   return dx * dx + dy * dy <= rr * rr;
 }
 
@@ -82,7 +115,7 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
   const startedAt = useMemo(() => Date.now(), []);
 
   const idCounter = useRef(1);
-  const spawnMsRef = useRef(600);
+  const spawnMsRef = useRef(660);
   const baseVyRef = useRef(90);
   const lastSpawnRef = useRef(0);
   const lastShotRef = useRef(0);
@@ -93,8 +126,14 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
 
     function resize() {
       const parent = canvas.parentElement!;
-      const w = Math.min(parent.clientWidth, 900);
-      const h = 520;
+      const w = parent.clientWidth;
+
+
+      // ✅ Give more vertical play space (taller canvas)
+      // You can tweak these numbers, but this already feels much better.
+      const desired = 720;
+      const maxByViewport = Math.max(520, window.innerHeight - 220);
+      const h = Math.min(desired, maxByViewport);
 
       canvas.width = w * devicePixelRatio;
       canvas.height = h * devicePixelRatio;
@@ -147,10 +186,10 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
       let label: string;
 
       // 50% safe, 25% pii, 25% conf
-      if (roll < 0.5) {
+      if (roll < 0.6) {
         type = "SAFE";
         label = pick(SAFE);
-      } else if (roll < 0.75) {
+      } else if (roll < 0.80) {
         type = "PII";
         label = pick(PII);
       } else {
@@ -158,7 +197,7 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
         label = pick(CONF);
       }
 
-      const r = 34; // circle radius (tweak: 28-38)
+      const r = 34;
       const x = r + Math.random() * (w - r * 2);
       const y = -r - 10;
 
@@ -177,14 +216,14 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
       });
     }
 
-    function shoot(nowMs: number) {
+    function shoot(nowMs: number, shipY: number) {
       if (nowMs - lastShotRef.current < 160) return;
       lastShotRef.current = nowMs;
 
       bulletsRef.current.push({
         id: idCounter.current++,
         x: shipXRef.current,
-        y: 470,
+        y: shipY - 18, // ✅ always relative to bottom
         r: 4,
         vy: -520,
       });
@@ -197,21 +236,28 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
       const w = parseFloat(canvas.style.width);
       const h = parseFloat(canvas.style.height);
 
+      // ✅ ship sits at the bottom of the canvas now, no matter the height
+      const shipY = h - 30;
+
       const elapsed = (Date.now() - startedAt) / 1000;
       const remaining = Math.max(0, GAME_SECONDS - elapsed);
 
-      // difficulty ramp
-      spawnMsRef.current = Math.max(180, 600 - elapsed * 14);
-      baseVyRef.current = 90 + elapsed * 6;
+      const rampStart = 45;
+      const rampElapsed = Math.max(0, elapsed - rampStart);
+
+      // difficulty ramp starts after 45s
+      spawnMsRef.current = Math.max(180, 600 - rampElapsed * 14);
+      baseVyRef.current = 90 + rampElapsed * 6;
+
 
       // ship move
       const shipSpeed = 520;
       if (keysRef.current.left) shipXRef.current -= shipSpeed * dt;
       if (keysRef.current.right) shipXRef.current += shipSpeed * dt;
-      shipXRef.current = Math.max(18, Math.min(w - 18, shipXRef.current));
+      shipXRef.current = clamp(shipXRef.current, 18, w - 18);
 
       // shoot
-      if (keysRef.current.shoot) shoot(performance.now());
+      if (keysRef.current.shoot) shoot(performance.now(), shipY);
 
       // spawn
       if (now - lastSpawnRef.current > spawnMsRef.current) {
@@ -219,15 +265,13 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
         spawnItem(now, w);
       }
 
-      // update bullets
       bulletsRef.current = bulletsRef.current
         .map((b) => ({ ...b, y: b.y + b.vy * dt }))
-        .filter((b) => b.y > -20);
+        .filter((b) => b.y > -30);
 
-      // update items
       itemsRef.current = itemsRef.current
         .map((it) => ({ ...it, y: it.y + it.vy * dt }))
-        .filter((it) => it.y < h + 100);
+        .filter((it) => it.y < h + 120);
 
       // collisions (one bullet = one hit)
       const remainingItems: FallingItem[] = [];
@@ -239,7 +283,7 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
         for (const b of bulletsRef.current) {
           if (bulletsToRemove.has(b.id)) continue;
 
-          if (circlesOverlap(it.x, it.y, it.r, b.x, b.y, b.r)) {
+          if (circleHitsBullet(it, b)) {
             hitByBulletId = b.id;
 
             if (it.type === "SAFE") {
@@ -273,17 +317,16 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
 
       // HUD
       ctx.fillStyle = "#ffffff";
-      ctx.font = "16px ui-sans-serif, system-ui";
-      ctx.fillText(`Time: ${Math.ceil(remaining)}s`, 14, 24);
-      ctx.fillText(`Score: ${scoreRef.current}`, 14, 44);
-      ctx.fillText(`← → / A D move · Space/Enter shoot`, 14, 64);
+      ctx.font = "18px ui-sans-serif, system-ui";
+      ctx.fillText(`Time: ${Math.ceil(remaining)}s`, 16, 28);
+      ctx.fillText(`Score: ${scoreRef.current}`, 16, 54);
 
-      // ship (triangle)
+      // ship
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
-      ctx.moveTo(shipXRef.current, 485);
-      ctx.lineTo(shipXRef.current - 14, 510);
-      ctx.lineTo(shipXRef.current + 14, 510);
+      ctx.moveTo(shipXRef.current, shipY - 18);
+      ctx.lineTo(shipXRef.current - 14, shipY + 10);
+      ctx.lineTo(shipXRef.current + 14, shipY + 10);
       ctx.closePath();
       ctx.fill();
 
@@ -295,8 +338,9 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
         ctx.fill();
       }
 
-      // items (circles + centered text)
+      // items (circles + wrapped-ish label)
       for (const it of itemsRef.current) {
+        // circle
         ctx.fillStyle = it.bg;
         ctx.beginPath();
         ctx.arc(it.x, it.y, it.r, 0, Math.PI * 2);
@@ -304,31 +348,29 @@ export default function PiiBlasterCanvas({ onFinish }: { onFinish: (r: GameResul
 
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(it.x, it.y, it.r, 0, Math.PI * 2);
         ctx.stroke();
 
+        // label (simple 2-line split at space)
         ctx.fillStyle = "#ffffff";
-ctx.font = "13px ui-sans-serif, system-ui";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
+        ctx.font = "14px ui-sans-serif, system-ui";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
-const words = it.label.split(" ");
+        const parts = it.label.split(" ");
+        if (parts.length <= 1) {
+          ctx.fillText(it.label, it.x, it.y);
+        } else {
+          const mid = Math.ceil(parts.length / 2);
+          const line1 = parts.slice(0, mid).join(" ");
+          const line2 = parts.slice(mid).join(" ");
+          ctx.fillText(line1, it.x, it.y - 8);
+          ctx.fillText(line2, it.x, it.y + 8);
+        }
 
-if (words.length === 1) {
-  // Single word
-  ctx.fillText(words[0], it.x, it.y);
-} else {
-  // Two lines max
-  const line1 = words[0];
-  const line2 = words.slice(1).join(" ");
-
-  ctx.fillText(line1, it.x, it.y - 7);
-  ctx.fillText(line2.length > 14 ? line2.slice(0, 13) + "…" : line2, it.x, it.y + 7);
-}
-
-// reset defaults
-ctx.textAlign = "start";
-ctx.textBaseline = "alphabetic";
-
+        ctx.textAlign = "start";
+        ctx.textBaseline = "alphabetic";
       }
 
       // end
