@@ -173,7 +173,7 @@ export default function PiiBlasterPage() {
             
                 const audio = bgMusicRef.current;
                 if (audio) {
-                  audio.volume = 0.25;
+                  audio.volume = 0.15;
                   audio.currentTime = 0;
                   audio.play();
                 }
