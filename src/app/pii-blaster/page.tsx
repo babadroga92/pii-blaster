@@ -5,7 +5,6 @@ import PiiBlasterCanvas, { GameResult } from "./components/PiiBlasterCanvas";
 
 type Screen = "intro" | "username" | "play" | "results";
 
-const USERNAME_KEY = "privacyweek_username";
 
 type LbRow = { username: string; score: number; created_at: string };
 
@@ -27,15 +26,6 @@ export default function PiiBlasterPage() {
 
   // ✅ prevents duplicate submissions per round
   const finishLockRef = useRef(false);
-
-  
-  
-
-
-  useEffect(() => {
-    const saved = localStorage.getItem(USERNAME_KEY);
-    if (saved) setUsername(saved);
-  }, []);
 
   const usernameValid = useMemo(() => /^[a-zA-Z0-9._-]{3,20}$/.test(username), [username]);
 
@@ -169,8 +159,6 @@ export default function PiiBlasterPage() {
               className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-40"
               disabled={!usernameValid}
               onClick={() => {
-                localStorage.setItem(USERNAME_KEY, username);
-            
                 const audio = bgMusicRef.current;
                 if (audio) {
                   audio.volume = 0.15;
