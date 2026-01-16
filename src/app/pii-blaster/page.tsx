@@ -10,6 +10,9 @@ const USERNAME_KEY = "privacyweek_username";
 type LbRow = { username: string; score: number; created_at: string };
 
 export default function PiiBlasterPage() {
+
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+
   const [screen, setScreen] = useState<Screen>("intro");
   const [username, setUsername] = useState("");
 
@@ -24,6 +27,22 @@ export default function PiiBlasterPage() {
 
   // ✅ prevents duplicate submissions per round
   const finishLockRef = useRef(false);
+
+  useEffect(() => {
+    const audio = bgMusicRef.current;
+    if (!audio) return;
+  
+    if (screen === "play") {
+      audio.volume = 0.3; // keep it subtle
+      audio.muted = false;
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [screen]);
+  
+
 
   useEffect(() => {
     const saved = localStorage.getItem(USERNAME_KEY);
@@ -80,6 +99,15 @@ export default function PiiBlasterPage() {
         </div>
       </header>
 
+      <audio
+        ref={bgMusicRef}
+        src="/audio/bg-music.mp3"
+        loop
+        muted
+        preload="auto"
+      />
+
+
       {screen === "intro" && (
         <section className="rounded-2xl border p-6 bg-white text-black flex flex-col gap-4">
           <div className="flex items-start justify-between gap-4">
@@ -96,7 +124,7 @@ export default function PiiBlasterPage() {
             </div>
 
             <div className="hidden sm:flex items-center justify-center rounded-xl border px-3 py-2 text-sm text-black">
-              25s round
+              60s round
             </div>
           </div>
 
