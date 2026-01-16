@@ -28,19 +28,7 @@ export default function PiiBlasterPage() {
   // ✅ prevents duplicate submissions per round
   const finishLockRef = useRef(false);
 
-  useEffect(() => {
-    const audio = bgMusicRef.current;
-    if (!audio) return;
   
-    if (screen === "play") {
-      audio.volume = 0.3; // keep it subtle
-      audio.muted = false;
-      audio.play().catch(() => {});
-    } else {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-  }, [screen]);
   
 
 
@@ -103,7 +91,6 @@ export default function PiiBlasterPage() {
         ref={bgMusicRef}
         src="/audio/bg-music.mp3"
         loop
-        muted
         preload="auto"
       />
 
@@ -183,6 +170,14 @@ export default function PiiBlasterPage() {
               disabled={!usernameValid}
               onClick={() => {
                 localStorage.setItem(USERNAME_KEY, username);
+            
+                const audio = bgMusicRef.current;
+                if (audio) {
+                  audio.volume = 0.3;
+                  audio.currentTime = 0;
+                  audio.play();
+                }
+            
                 setScreen("play");
               }}
             >
@@ -227,6 +222,12 @@ export default function PiiBlasterPage() {
 
             const top5 = await fetchLeaderboardTop5();
             setLeaderboard(top5);
+
+            const audio = bgMusicRef.current;
+            if (audio) {
+              audio.pause();
+              audio.currentTime = 0;
+            }
 
             setScreen("results");
           }}
