@@ -140,7 +140,12 @@ export default function PiiBlasterPage() {
 
       {screen === "username" && (
         <section className="rounded-2xl border p-6 bg-white flex flex-col gap-3">
+          
           <label className="font-semibold text-black">Choose a username (3–20 chars)</label>
+          <div className="mt-2 text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+  ⚠️ Do not use your personal name
+</div>
+
           <input
             className="border rounded-lg px-3 py-2 text-black font-semibold text-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
             value={username}
