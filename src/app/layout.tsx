@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Data Privacy Quest",
+  title: "PII Blaster",
   description: "Privacy Week 2026 interactive game",
 };
 
