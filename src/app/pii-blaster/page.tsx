@@ -4,12 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import PiiBlasterCanvas, { GameResult } from "./components/PiiBlasterCanvas";
 
 type Screen = "intro" | "username" | "play" | "results";
-
-
 type LbRow = { username: string; score: number; created_at: string };
 
 export default function PiiBlasterPage() {
-
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
   const [screen, setScreen] = useState<Screen>("intro");
@@ -27,7 +24,8 @@ export default function PiiBlasterPage() {
   // ✅ prevents duplicate submissions per round
   const finishLockRef = useRef(false);
 
-  const usernameValid = useMemo(() => /^[a-zA-Z0-9._-]{3,20}$/.test(username), [username]);
+  const u = username.trim();
+  const usernameValid = useMemo(() => /^[a-zA-Z0-9._-]{3,20}$/.test(u), [u]);
 
   // Start 3-2-1 countdown whenever we enter the play screen
   useEffect(() => {
@@ -63,269 +61,821 @@ export default function PiiBlasterPage() {
     const res = await fetch("/api/score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, game: "pii_blaster", score }),
+      body: JSON.stringify({ username: u, game: "pii_blaster", score }),
     });
     if (!res.ok) throw new Error(await res.text());
   }
 
   return (
-    <main className="min-h-screen p-6 max-w-3xl mx-auto flex flex-col gap-6">
-      <header className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-sm uppercase tracking-wider text-neutral-500">Privacy Week 2026</p>
-          <h1 className="text-3xl font-bold">PII Blaster</h1>
-        </div>
-      </header>
-
-      <audio
-        ref={bgMusicRef}
-        src="/audio/bg-music.mp3"
-        loop
-        preload="auto"
+    <main
+      style={{
+        minHeight: "100vh",
+        fontFamily:
+          'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        color: "white",
+        display: "grid",
+        placeItems: "center",
+        padding: 24,
+        background: "#070915",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Animated background */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(600px 400px at 20% 10%, rgba(96,165,250,0.18), transparent 60%), radial-gradient(500px 380px at 80% 20%, rgba(34,197,94,0.14), transparent 55%)",
+          animation: "floatBg 20s ease-in-out infinite alternate",
+        }}
       />
+      <style>{`
+        @keyframes floatBg {
+          from { transform: translateY(0px); }
+          to { transform: translateY(-40px); }
+        }
+      `}</style>
 
-
-      {screen === "intro" && (
-        <section className="rounded-2xl border p-6 bg-white text-black flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-4xl font-black tracking-tight text-black">
-                Blast the <span className="underline decoration-4">safe data</span>.
-              </h2>
-
-              <p className="mt-3 text-lg text-black">
-                <span className="font-black">Shoot only safe data.</span>{" "}
-                Shooting <span className="font-black">PII</span> or{" "}
-                <span className="font-black">confidential data</span> costs you points.
-              </p>
-            </div>
-
-            <div className="hidden sm:flex items-center justify-center rounded-xl border px-3 py-2 text-sm text-black">
-              60s round
-            </div>
+      {/* Content */}
+      <div
+        style={{
+          position: "relative",
+          width: 880,
+          maxWidth: "100%",
+        }}
+      >
+        {/* Header */}
+        <header style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              borderRadius: 999,
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.04)",
+              fontSize: 12,
+              color: "rgba(255,255,255,0.75)",
+            }}
+          >
+            Privacy Week 2026
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border p-3">
-              <p className="text-xl font-black tracking-wider text-black">✅ SHOOT</p>
-              <p className="text-sm text-neutral-700 mt-1">Public / non-sensitive info</p>
-              <p className="text-xs text-neutral-500 mt-2">Examples: Weather, blog, press</p>
-            </div>
+          <h1
+            style={{
+              margin: "12px 0 6px",
+              fontSize: 46,
+              fontWeight: 900,
+              letterSpacing: -1,
+            }}
+          >
+            PII Blaster
+          </h1>
 
-            <div className="rounded-xl border p-3">
-              <p className="text-xl font-black tracking-wider text-black">⚠️ AVOID</p>
-              <p className="text-sm text-neutral-700 mt-1">PII (personal info)</p>
-              <p className="text-xs text-neutral-500 mt-2">Examples: Email, phone, address</p>
-            </div>
+          <p
+            style={{
+              maxWidth: 720,
+              fontSize: 16,
+              lineHeight: 1.6,
+              color: "rgba(255,255,255,0.78)",
+            }}
+          >
+            <span style={{ fontWeight: 900 }}>Shoot only safe data.</span> Shooting{" "}
+            <span style={{ fontWeight: 900 }}>PII</span> or{" "}
+            <span style={{ fontWeight: 900 }}>confidential data</span> costs you points.
+          </p>
+        </header>
 
-            <div className="rounded-xl border p-3">
-              <p className="text-xl font-black tracking-wider text-black">🔒 AVOID</p>
-              <p className="text-sm text-neutral-700 mt-1">Confidential data</p>
-              <p className="text-xs text-neutral-500 mt-2">Examples: Payroll, contracts</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
-            <p className="text-xs text-neutral-500">Tip: use a nickname. Don’t enter real personal data.</p>
-
-            <button
-              className="rounded-lg bg-black text-white px-5 py-2 w-fit"
-              onClick={() => setScreen("username")}
-            >
-              Start game →
-            </button>
-          </div>
-        </section>
-      )}
-
-      {screen === "username" && (
-        <section className="rounded-2xl border p-6 bg-white flex flex-col gap-3">
-          
-          <label className="font-semibold text-black">Choose a username (3–20 chars)</label>
-          <div className="mt-2 text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-  ⚠️ Do not use your personal name
-</div>
-
-          <input
-            className="border rounded-lg px-3 py-2 text-black font-semibold text-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.trim())}
-            placeholder="e.g. code_ninja"
-          />
-
-          {!usernameValid && (
-            <p className="text-sm text-red-600">
-              Allowed: letters/numbers/dot/underscore/dash (3–20 chars)
-            </p>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <button
-              className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-40"
-              disabled={!usernameValid}
-              onClick={() => {
-                const audio = bgMusicRef.current;
-                if (audio) {
-                  audio.volume = 0.15;
-                  audio.currentTime = 0;
-                  audio.play();
-                }
-            
-                setScreen("play");
-              }}
-            >
-              Continue
-            </button>
-
-            <button className="rounded-lg border px-4 py-2" onClick={() => setScreen("intro")}>
-              Back
-            </button>
-          </div>
-        </section>
-      )}
-
-{screen === "play" && (
-  <section className="flex flex-col gap-3">
-    <div className="flex items-center justify-between rounded-2xl border bg-white p-4">
-      <p className="text-sm text-black">
-        <span className="font-black">SHOOT</span> safe ·{" "}
-        <span className="font-black">AVOID</span> PII & confidential
-      </p>
-      <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => setScreen("intro")}>
-        Exit
-      </button>
-    </div>
-
-    <div className="relative min-h-[560px]">
-      {/* Always mounted to avoid layout shift */}
-      <div className={countdownActive ? "pointer-events-none opacity-0" : ""}>
-        <PiiBlasterCanvas
-          onFinish={async (r) => {
-            if (finishLockRef.current) return;
-            finishLockRef.current = true;
-
-            setLastResult(r);
-            setSavingMsg("Saving score…");
-            try {
-              await submitScore(r.score);
-              setSavingMsg("Score saved ✅");
-            } catch (e: any) {
-              setSavingMsg(`Score NOT saved: ${String(e?.message ?? e)}`);
-            }
-
-            const top5 = await fetchLeaderboardTop5();
-            setLeaderboard(top5);
-
-            const audio = bgMusicRef.current;
-            if (audio) {
-              audio.pause();
-              audio.currentTime = 0;
-            }
-
-            setScreen("results");
+        {/* Main card */}
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.2fr 0.8fr",
+            gap: 16,
+            borderRadius: 18,
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "rgba(9,12,28,0.88)",
+            padding: 22,
+            boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
           }}
-        />
-      </div>
+        >
+          {/* Left column */}
+          <div>
+            {screen === "intro" && (
+              <>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>
+                  How it works
+                </h2>
 
-      {countdownActive && (
-        <div className="absolute inset-0 rounded-xl border bg-black/90 flex flex-col items-center justify-center gap-3">
-          <div className="text-white text-7xl font-black">{countdown === 0 ? "GO!" : countdown}</div>
-          <div className="text-white/80 text-sm">Get ready…</div>
-        </div>
-      )}
-    </div>
-  </section>
-)}
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 16, fontWeight: 900 }}>✅ SHOOT</div>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.78)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Public / non-sensitive info
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        color: "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      Examples: Weather, blog, press
+                    </div>
+                  </div>
 
+                  <div
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 16, fontWeight: 900 }}>⚠️ AVOID</div>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.78)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      PII (personal info)
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        color: "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      Examples: Email, phone, address
+                    </div>
+                  </div>
 
-      {screen === "results" && lastResult && (
-        <section className="rounded-2xl border p-6 bg-white flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-black text-black">Round complete</h2>
-              <p className="text-sm text-neutral-600 mt-1">{savingMsg}</p>
-            </div>
+                  <div
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 16, fontWeight: 900 }}>🔒 AVOID</div>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.78)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Confidential data
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        color: "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      Examples: Payroll, contracts
+                    </div>
+                  </div>
+                </div>
 
-            <div className="rounded-xl border px-4 py-3">
-              <div className="text-xs text-neutral-600">Your score</div>
-              <div className="text-3xl font-black text-black">{lastResult.score}</div>
-            </div>
-          </div>
+                {/* Disclaimer (added) */}
+                <div
+                  style={{
+                    marginTop: 14,
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(251,113,133,0.25)",
+                    background: "rgba(251,113,133,0.08)",
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <b style={{ color: "rgba(251,113,133,0.95)" }}>Important:</b>{" "}
+                  Please don’t use your real name or any real credentials. Use a fun alias — this
+                  game stores data only for gameplay and demonstration purposes.
+                </div>
 
-          <div className="grid sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border p-3">
-              <div className="text-xs text-neutral-600">Safe hits</div>
-              <div className="text-2xl font-black text-black">{lastResult.safeHits}</div>
-            </div>
-            <div className="rounded-xl border p-3">
-              <div className="text-xs text-neutral-600">PII hits</div>
-              <div className="text-2xl font-black text-black">{lastResult.piiHits}</div>
-            </div>
-            <div className="rounded-xl border p-3">
-              <div className="text-xs text-neutral-600">Conf hits</div>
-              <div className="text-2xl font-black text-black">{lastResult.confHits}</div>
-            </div>
-          </div>
+                {/* Data collected (added) */}
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                    fontSize: 13,
+                    lineHeight: 1.55,
+                    color: "rgba(255,255,255,0.8)",
+                  }}
+                >
+                  <div style={{ fontWeight: 900, marginBottom: 6 }}>
+                    Data Collected During Gameplay
+                  </div>
 
-          <div className="rounded-xl border p-4 bg-neutral-50">
-            <p className="font-semibold text-black">Privacy takeaway</p>
-            <p className="text-sm text-neutral-700 mt-1">
-              If it identifies a person (PII) or exposes internal business details (confidential), treat it as
-              sensitive and handle it carefully.
-            </p>
-          </div>
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    <li>
+                      <b>Username:</b> The display name you choose for this game session.
+                    </li>
+                    <li>
+                      <b>Score:</b> Your accumulated points based on progress and performance.
+                    </li>
+                    <li>
+                      <b>Round Duration:</b> The game round length (for this mode, 60 seconds).
+                    </li>
+                    <li>
+                      <b>Completion Timestamp:</b> The date and time when the session ends.
+                    </li>
+                  </ul>
+                </div>
 
-          <div className="rounded-xl border p-4">
-          <div className="flex items-center justify-between">
-  <p className="font-black text-black">Top 5 leaderboard</p>
-</div>
+                <div
+                  style={{
+                    marginTop: 10,
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.6)",
+                  }}
+                >
+                  60s round
+                </div>
+              </>
+            )}
 
+            {screen === "play" && (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "rgba(255,255,255,0.8)",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <span style={{ fontWeight: 900 }}>SHOOT</span> safe ·{" "}
+                    <span style={{ fontWeight: 900 }}>AVOID</span> PII & confidential
+                  </div>
+                  <button
+                    onClick={() => setScreen("intro")}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 12,
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      background: "rgba(255,255,255,0.06)",
+                      color: "rgba(255,255,255,0.85)",
+                      cursor: "pointer",
+                      fontWeight: 800,
+                      fontSize: 12,
+                    }}
+                  >
+                    Exit
+                  </button>
+                </div>
 
-            <div className="mt-3 overflow-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left border-b">
-                  <th className="py-2 font-black text-black">Rank</th>
-<th className="font-black text-black">Username</th>
-<th className="font-black text-black">Score</th>
-<th className="hidden sm:table-cell font-black text-black">When</th>
+                <div style={{ position: "relative", minHeight: 560 }}>
+                  {/* Always mounted to avoid layout shift */}
+                  <div
+                    style={{
+                      pointerEvents: countdownActive ? "none" : "auto",
+                      opacity: countdownActive ? 0 : 1,
+                      transition: "opacity 150ms ease",
+                    }}
+                  >
+                    <PiiBlasterCanvas
+                      onFinish={async (r) => {
+                        if (finishLockRef.current) return;
+                        finishLockRef.current = true;
 
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaderboard.map((r, i) => (
-                    <tr key={`${r.username}-${r.created_at}-${i}`} className="border-b hover:bg-neutral-50">
-                      <td className="py-2 font-semibold text-black">{i + 1}</td>
-                      <td className="font-semibold text-black">{r.username}</td>
-                      <td className="font-black text-black">{r.score}</td>
-                      <td className="hidden sm:table-cell text-sm text-neutral-500">
-                        {new Date(r.created_at).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
+                        setLastResult(r);
+                        setSavingMsg("Saving score…");
+                        try {
+                          await submitScore(r.score);
+                          setSavingMsg("Score saved ✅");
+                        } catch (e: any) {
+                          setSavingMsg(`Score NOT saved: ${String(e?.message ?? e)}`);
+                        }
 
-                  {leaderboard.length === 0 && (
-                    <tr>
-                      <td className="py-4 text-neutral-600" colSpan={4}>
-                        No scores yet.
-                      </td>
-                    </tr>
+                        const top5 = await fetchLeaderboardTop5();
+                        setLeaderboard(top5);
+
+                        const audio = bgMusicRef.current;
+                        if (audio) {
+                          audio.pause();
+                          audio.currentTime = 0;
+                        }
+
+                        setScreen("results");
+                      }}
+                    />
+                  </div>
+
+                  {countdownActive && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: 14,
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        background: "rgba(0,0,0,0.78)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ fontSize: 72, fontWeight: 900, color: "white" }}>
+                        {countdown === 0 ? "GO!" : countdown}
+                      </div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)" }}>
+                        Get ready…
+                      </div>
+                    </div>
                   )}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </>
+            )}
+
+            {screen === "results" && lastResult && (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 12,
+                  }}
+                >
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>
+                      Round complete
+                    </h2>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.65)",
+                      }}
+                    >
+                      {savingMsg}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      textAlign: "right",
+                      minWidth: 120,
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+                      Your score
+                    </div>
+                    <div style={{ fontSize: 34, fontWeight: 900, color: "white" }}>
+                      {lastResult.score}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+                      Safe hits
+                    </div>
+                    <div style={{ fontSize: 26, fontWeight: 900 }}>{lastResult.safeHits}</div>
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+                      PII hits
+                    </div>
+                    <div style={{ fontSize: 26, fontWeight: 900 }}>{lastResult.piiHits}</div>
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+                      Conf hits
+                    </div>
+                    <div style={{ fontSize: 26, fontWeight: 900 }}>{lastResult.confHits}</div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                  }}
+                >
+                  <div style={{ fontWeight: 900 }}>Privacy takeaway</div>
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      fontSize: 13,
+                      lineHeight: 1.55,
+                      color: "rgba(255,255,255,0.78)",
+                    }}
+                  >
+                    If it identifies a person (PII) or exposes internal business details
+                    (confidential), treat it as sensitive and handle it carefully.
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                    overflowX: "auto",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div style={{ fontWeight: 900 }}>Top 5 leaderboard</div>
+                  </div>
+
+                  <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+                        <th style={{ padding: "10px 0", fontWeight: 900 }}>Rank</th>
+                        <th style={{ fontWeight: 900 }}>Username</th>
+                        <th style={{ fontWeight: 900 }}>Score</th>
+                        <th style={{ fontWeight: 900, color: "rgba(255,255,255,0.7)" }}>When</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaderboard.map((r, i) => (
+                        <tr
+                          key={`${r.username}-${r.created_at}-${i}`}
+                          style={{
+                            borderBottom: "1px solid rgba(255,255,255,0.08)",
+                          }}
+                        >
+                          <td style={{ padding: "10px 0", fontWeight: 800 }}>{i + 1}</td>
+                          <td style={{ fontWeight: 800 }}>{r.username}</td>
+                          <td style={{ fontWeight: 900 }}>{r.score}</td>
+                          <td style={{ color: "rgba(255,255,255,0.65)", fontSize: 12 }}>
+                            {new Date(r.created_at).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+
+                      {leaderboard.length === 0 && (
+                        <tr>
+                          <td style={{ padding: "12px 0", color: "rgba(255,255,255,0.7)" }} colSpan={4}>
+                            No scores yet.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="flex gap-3">
-            <button className="rounded-lg bg-black text-white px-4 py-2" onClick={() => setScreen("play")}>
-              Play again
-            </button>
-            <button className="rounded-lg border px-4 py-2" onClick={() => setScreen("intro")}>
-              Back to home
-            </button>
+          {/* Right column (CTA / username) */}
+          <div>
+            <audio ref={bgMusicRef} src="/audio/bg-music.mp3" loop preload="auto" />
+
+            {screen === "intro" && (
+              <>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.7)",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  Ready to start?
+                </label>
+
+                <button
+                  onClick={() => setScreen("username")}
+                  style={{
+                    width: "100%",
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    background: "#60a5fa",
+                    color: "#071225",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    boxShadow: "0 12px 30px rgba(96,165,250,0.35)",
+                  }}
+                >
+                  Start game →
+                </button>
+
+                <div
+                  style={{
+                    marginTop: 10,
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.6)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Tip: use a nickname. Don’t enter real personal data.
+                </div>
+              </>
+            )}
+
+            {screen === "username" && (
+              <>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.7)",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  Choose a username (3–20 chars)
+                </label>
+
+                <div
+                  style={{
+                    marginBottom: 10,
+                    padding: 12,
+                    borderRadius: 14,
+                    border: "1px solid rgba(251,113,133,0.25)",
+                    background: "rgba(251,113,133,0.08)",
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                    color: "rgba(255,255,255,0.82)",
+                  }}
+                >
+                  ⚠️ Do not use your personal name
+                </div>
+
+                <input
+                  value={u}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" &&
+                    usernameValid &&
+                    (() => {
+                      const audio = bgMusicRef.current;
+                      if (audio) {
+                        audio.volume = 0.15;
+                        audio.currentTime = 0;
+                        audio.play();
+                      }
+                      setScreen("play");
+                    })()
+                  }
+                  placeholder="e.g. code_ninja"
+                  autoComplete="off"
+                  spellCheck={false}
+                  style={{
+                    width: "100%",
+                    padding: "14px 14px",
+                    borderRadius: 14,
+                    border: `1px solid ${
+                      !u
+                        ? "rgba(255,255,255,0.18)"
+                        : usernameValid
+                        ? "rgba(34,197,94,0.6)"
+                        : "rgba(251,113,133,0.7)"
+                    }`,
+                    background: "rgba(255,255,255,0.06)",
+                    color: "white",
+                    outline: "none",
+                    fontSize: 16,
+                  }}
+                />
+
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontSize: 12,
+                    color: !u
+                      ? "rgba(255,255,255,0.55)"
+                      : usernameValid
+                      ? "rgba(34,197,94,0.9)"
+                      : "rgba(251,113,133,0.95)",
+                  }}
+                >
+                  {!u
+                    ? "Use a nickname (not your real name)."
+                    : usernameValid
+                    ? "Looks good."
+                    : "Allowed: letters/numbers/dot/underscore/dash (3–20 chars)"}
+                </div>
+
+                <button
+                  disabled={!usernameValid}
+                  onClick={() => {
+                    const audio = bgMusicRef.current;
+                    if (audio) {
+                      audio.volume = 0.15;
+                      audio.currentTime = 0;
+                      audio.play();
+                    }
+                    setScreen("play");
+                  }}
+                  style={{
+                    width: "100%",
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    background: usernameValid ? "#60a5fa" : "rgba(255,255,255,0.12)",
+                    color: usernameValid ? "#071225" : "rgba(255,255,255,0.5)",
+                    fontWeight: 900,
+                    cursor: usernameValid ? "pointer" : "not-allowed",
+                    boxShadow: usernameValid
+                      ? "0 12px 30px rgba(96,165,250,0.35)"
+                      : "none",
+                  }}
+                >
+                  Continue
+                </button>
+
+                <button
+                  onClick={() => setScreen("intro")}
+                  style={{
+                    width: "100%",
+                    marginTop: 10,
+                    padding: 12,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    background: "rgba(255,255,255,0.06)",
+                    color: "rgba(255,255,255,0.85)",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Back
+                </button>
+              </>
+            )}
+
+            {screen === "play" && (
+              <>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.7)",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  In round
+                </label>
+
+                <button
+                  onClick={() => setScreen("intro")}
+                  style={{
+                    width: "100%",
+                    padding: 12,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    background: "rgba(255,255,255,0.06)",
+                    color: "rgba(255,255,255,0.85)",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Exit to home
+                </button>
+              </>
+            )}
+
+            {screen === "results" && lastResult && (
+              <>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.7)",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  Next
+                </label>
+
+                <button
+                  onClick={() => setScreen("play")}
+                  style={{
+                    width: "100%",
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    background: "#60a5fa",
+                    color: "#071225",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    boxShadow: "0 12px 30px rgba(96,165,250,0.35)",
+                  }}
+                >
+                  Play again
+                </button>
+
+                <button
+                  onClick={() => setScreen("intro")}
+                  style={{
+                    width: "100%",
+                    marginTop: 10,
+                    padding: 12,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    background: "rgba(255,255,255,0.06)",
+                    color: "rgba(255,255,255,0.85)",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Back to home
+                </button>
+              </>
+            )}
           </div>
         </section>
-      )}
+      </div>
     </main>
   );
 }
